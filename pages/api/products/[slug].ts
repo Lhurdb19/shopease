@@ -3,21 +3,26 @@ import { connectDB } from "@/lib/db";
 import Product from "@/models/Product";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { slug } = req.query;
   await connectDB();
 
   try {
-    const slugStr = Array.isArray(slug) ? slug[0] : slug;
+    const slug = Array.isArray(req.query.slug) ? req.query.slug[0] : req.query.slug;
 
-    const product = await Product.findOne({ slug: slugStr })
+    console.log("Requested slug:", slug);
+
+    const product = await Product.findOne({ slug: { $regex: `^${slug}$`, $options: "i" } })
       .populate("createdBy", "name email")
       .lean();
 
-    if (!product) return res.status(404).json({ message: "Product not found" });
+    console.log("Fetched product:", product);
 
-    res.status(200).json(product);
-  } catch (err) {
-    console.error("Product fetch error:", err);
-    res.status(500).json({ message: "Server error" });
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    return res.status(200).json(product);
+  } catch (error) {
+    console.error("SLUG API ERROR:", error);
+    return res.status(500).json({ message: "Server error" });
   }
 }
