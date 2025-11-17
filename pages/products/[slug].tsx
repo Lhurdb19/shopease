@@ -23,11 +23,10 @@ export default function ProductPage({ product }: ProductPageProps) {
   const [mainImage, setMainImage] = useState<string>(product.images?.[0] || "");
   const [isAdding, setIsAdding] = useState(false);
 
-  // ✅ Add to Cart
   const handleAddToCart = async () => {
     if (!session) {
       toast.info("Please log in to add items to your cart.");
-      return (window.location.href = "/login");
+      return (window.location.href = "/auth/login");
     }
 
     if (product.stock <= 0) {
@@ -46,11 +45,10 @@ export default function ProductPage({ product }: ProductPageProps) {
     }
   };
 
-  // ✅ Wishlist Toggle (context-driven)
   const handleToggleWishlist = async () => {
     if (!session) {
       toast.info("Please log in to use wishlist ❤️");
-      return (window.location.href = "/login");
+      return (window.location.href = "/auth/login");
     }
 
     try {
@@ -70,7 +68,6 @@ export default function ProductPage({ product }: ProductPageProps) {
     <div className="bg-white min-h-screen p-4 sm:p-6 lg:p-10 max-w-7xl mx-auto">
       <Toaster position="top-center" richColors />
 
-      {/* Back Button */}
       <button
         onClick={() => window.history.back()}
         className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors text-sm sm:text-base font-medium mb-6"
@@ -89,8 +86,6 @@ export default function ProductPage({ product }: ProductPageProps) {
               fill
               className="object-cover transition-transform duration-500 hover:scale-105"
             />
-
-            {/* ❤️ Wishlist Button */}
             {session && (
               <button
                 onClick={handleToggleWishlist}
@@ -98,10 +93,7 @@ export default function ProductPage({ product }: ProductPageProps) {
               >
                 <Heart
                   size={22}
-                  className={`${isInWishlist(product._id)
-                      ? "text-red-500"
-                      : "text-gray-400"
-                    } transition-colors`}
+                  className={`${isInWishlist(product._id) ? "text-red-500" : "text-gray-400"} transition-colors`}
                   fill={isInWishlist(product._id) ? "currentColor" : "none"}
                 />
               </button>
@@ -114,10 +106,9 @@ export default function ProductPage({ product }: ProductPageProps) {
                 <div
                   key={idx}
                   onClick={() => setMainImage(img)}
-                  className={`relative w-full aspect-square overflow-hidden rounded-lg cursor-pointer border-2 ${mainImage === img
-                      ? "border-blue-600"
-                      : "border-transparent hover:border-gray-300"
-                    } transition-all duration-300`}
+                  className={`relative w-full aspect-square overflow-hidden rounded-lg cursor-pointer border-2 ${
+                    mainImage === img ? "border-blue-600" : "border-transparent hover:border-gray-300"
+                  } transition-all duration-300`}
                 >
                   <Image
                     src={img}
@@ -133,70 +124,45 @@ export default function ProductPage({ product }: ProductPageProps) {
 
         {/* RIGHT - Product Info */}
         <div className="flex flex-col justify-center space-y-5">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            {product.title}
-          </h1>
-
-          <p className="text-gray-600 text-sm sm:text-base leading-relaxed">
-            {product.description}
-          </p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{product.title}</h1>
+          <p className="text-gray-600 text-sm sm:text-base leading-relaxed">{product.description}</p>
 
           <div className="space-y-2">
-            <p className="text-2xl font-semibold text-blue-600">
-              ₦{product.price?.toLocaleString()}
-            </p>
-            {product.discount && (
-              <p className="text-sm line-through text-gray-500">
-                ₦{product.oldPrice?.toLocaleString()}
-              </p>
-            )}
-            <p
-              className={`text-sm font-medium ${product.stock > 0 ? "text-green-600" : "text-red-500"
-                }`}
-            >
+            <p className="text-2xl font-semibold text-blue-600">₦{product.price?.toLocaleString()}</p>
+            {product.discount && <p className="text-sm line-through text-gray-500">₦{product.oldPrice?.toLocaleString()}</p>}
+            <p className={`text-sm font-medium ${product.stock > 0 ? "text-green-600" : "text-red-500"}`}>
               {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
             </p>
-            <p className="text-sm text-gray-500">
-              Seller: {product.createdBy?.name || product.createdBy?.email}
-            </p>
+            <p className="text-sm text-gray-500">Seller: {product.createdBy?.name || product.createdBy?.email}</p>
           </div>
 
-          {/* Add to Cart + Wishlist Buttons */}
           <div className="flex flex-wrap gap-4 pt-4">
             <button
               onClick={handleAddToCart}
               disabled={isAdding || product.stock <= 0}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-300 shadow-md ${product.stock > 0
-                  ? "bg-blue-600 text-white hover:bg-blue-700"
-                  : "bg-gray-300 text-gray-600 cursor-not-allowed"
-                }`}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-300 shadow-md ${
+                product.stock > 0 ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-gray-300 text-gray-600 cursor-not-allowed"
+              }`}
             >
               <ShoppingCart size={20} />
               {isAdding ? "Adding..." : "Add to Cart"}
             </button>
 
-            {/* Wishlist Button - hidden on mobile */}
             <button
               onClick={handleToggleWishlist}
-              className={`hidden sm:flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-300 border shadow-sm ${isInWishlist(product._id)
-                  ? "bg-red-500 text-white hover:bg-red-600"
-                  : "border-gray-400 text-gray-700 hover:bg-gray-100"
-                }`}
+              className={`hidden sm:flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-300 border shadow-sm ${
+                isInWishlist(product._id) ? "bg-red-500 text-white hover:bg-red-600" : "border-gray-400 text-gray-700 hover:bg-gray-100"
+              }`}
             >
-              <Heart
-                size={20}
-                fill={isInWishlist(product._id) ? "currentColor" : "none"}
-                className="transition-colors"
-              />
+              <Heart size={20} fill={isInWishlist(product._id) ? "currentColor" : "none"} className="transition-colors" />
               {isInWishlist(product._id) ? "Wishlisted" : "Add to Wishlist"}
             </button>
           </div>
-
         </div>
       </div>
     </div>
   );
-}
+};
 
 // ----------------------
 // SERVER-SIDE FETCH
@@ -206,12 +172,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
   const slug = context.params?.slug as string;
 
-  if (!slug) {
-    return { notFound: true };
-  }
+  if (!slug) return { notFound: true };
 
   try {
-    const product = await Product.findOne({ slug })
+    // ✅ Case-insensitive slug search
+    const product = await Product.findOne({ slug: { $regex: `^${slug}$`, $options: "i" } })
       .populate("createdBy", "name email")
       .lean();
 
@@ -223,7 +188,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       },
     };
   } catch (err) {
-    console.error(err);
+    console.error("Product page error:", err);
     return { notFound: true };
   }
 };

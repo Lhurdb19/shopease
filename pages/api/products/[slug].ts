@@ -6,15 +6,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await connectDB();
 
   try {
-    const slug = Array.isArray(req.query.slug) ? req.query.slug[0] : req.query.slug;
+    const slug = (Array.isArray(req.query.slug) ? req.query.slug[0] : req.query.slug)?.trim();
+    if (!slug) return res.status(400).json({ message: "Invalid slug" });
 
-    console.log("Requested slug:", slug);
+
+    // console.log("Requested slug:", slug);
 
     const product = await Product.findOne({ slug: { $regex: `^${slug}$`, $options: "i" } })
       .populate("createdBy", "name email")
       .lean();
 
-    console.log("Fetched product:", product);
+    // console.log("Fetched product:", product);
 
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
