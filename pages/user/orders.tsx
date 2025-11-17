@@ -1,5 +1,3 @@
-//user/orders
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -41,6 +39,8 @@ interface Order {
     phone: string;
     address: string;
   };
+  trackingNumber?: string;
+  trackingUrl?: string;
 }
 
 export default function OrdersPage() {
@@ -54,9 +54,7 @@ export default function OrdersPage() {
 
   // Fetch orders
   useEffect(() => {
-    if (status === "authenticated") {
-      fetchOrders();
-    }
+    if (status === "authenticated") fetchOrders();
   }, [status]);
 
   const fetchOrders = async () => {
@@ -65,17 +63,14 @@ export default function OrdersPage() {
       setOrders(res.data);
     } catch (error) {
       toast.error("Failed to load orders");
-      console.error("Error fetching orders:", error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Filtered + paginated orders
   const filteredOrders =
-    filter === "all"
-      ? orders
-      : orders.filter((order) => order.status === filter);
+    filter === "all" ? orders : orders.filter((order) => order.status === filter);
   const startIndex = (currentPage - 1) * ordersPerPage;
   const paginatedOrders = filteredOrders.slice(
     startIndex,
@@ -88,7 +83,12 @@ export default function OrdersPage() {
   };
 
   const handleTrack = (order: Order) => {
-    toast.info(`Tracking info coming soon for Order #${order._id.slice(-6)}`);
+    if (!order.trackingNumber) {
+      toast.error("Tracking not available yet.");
+      return;
+    }
+    // Redirect to tracking page
+    window.location.href = `/track/${order._id}`;
   };
 
   if (status === "loading" || loading)
@@ -109,9 +109,7 @@ export default function OrdersPage() {
     return (
       <div className="text-center py-20">
         <Package className="mx-auto w-16 h-16 text-gray-400 mb-4" />
-        <p className="text-gray-700 text-lg font-medium">
-          You have no orders yet.
-        </p>
+        <p className="text-gray-700 text-lg font-medium">You have no orders yet.</p>
       </div>
     );
 
@@ -119,9 +117,9 @@ export default function OrdersPage() {
     <div className="max-w-6xl mx-auto px-4 py-10">
       <Toaster richColors position="top-right" />
 
+      {/* Filter */}
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
         <h1 className="text-3xl font-semibold text-gray-800">My Orders</h1>
-
         <select
           value={filter}
           onChange={(e) => {
@@ -132,7 +130,14 @@ export default function OrdersPage() {
         >
           <option value="all">All Orders</option>
           <option value="pending">Pending</option>
-          <option value="completed">Completed</option>
+          <option value="paid">Paid</option>
+          <option value="processing">Processing</option>
+          <option value="shipping">Shipping</option>
+          <option value="delivered">Delivered</option>
+          <option value="received">Received</option>
+          <option value="cod_pending">COD Pending</option>
+          <option value="cod_on_delivery">COD On Delivery</option>
+          <option value="cod_delivered">COD Delivered</option>
           <option value="cancelled">Cancelled</option>
         </select>
       </div>
@@ -180,9 +185,7 @@ export default function OrdersPage() {
                       <p className="text-sm font-medium text-gray-800">
                         {item.product?.name || "Product"}
                       </p>
-                      <p className="text-xs text-gray-500">
-                        Qty: {item.quantity}
-                      </p>
+                      <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
                     </div>
                     <p className="text-sm font-semibold text-gray-700">
                       ₦{item.price.toLocaleString()}
@@ -202,8 +205,7 @@ export default function OrdersPage() {
 
             <div className="mt-4 border-t pt-3">
               <p className="text-sm text-gray-600">
-                <span className="font-medium">Total:</span> ₦
-                {order.total.toLocaleString()}
+                <span className="font-medium">Total:</span> ₦{order.total.toLocaleString()}
               </p>
               <p className="text-sm text-gray-600">
                 <span className="font-medium">Status:</span>{" "}
@@ -251,7 +253,7 @@ export default function OrdersPage() {
         </div>
       )}
 
-      {/* Modal for details */}
+      {/* Modal */}
       {selectedOrder && (
         <div
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
@@ -264,6 +266,7 @@ export default function OrdersPage() {
             <h2 className="text-xl font-semibold mb-4 text-gray-800">
               Order #{selectedOrder._id.slice(-6).toUpperCase()}
             </h2>
+
             <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
               {selectedOrder.items.map((item, i) => (
                 <div key={i} className="flex items-center gap-3 border-b pb-2">
@@ -277,12 +280,8 @@ export default function OrdersPage() {
                     />
                   )}
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-800">
-                      {item.product?.name}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      Qty: {item.quantity}
-                    </p>
+                    <p className="text-sm font-medium text-gray-800">{item.product?.name}</p>
+                    <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
                   </div>
                   <p className="text-sm font-semibold text-gray-700">
                     ₦{item.price.toLocaleString()}
@@ -305,6 +304,23 @@ export default function OrdersPage() {
               </div>
             )}
 
+            {/* Tracking info */}
+            {selectedOrder.trackingNumber && (
+              <p className="text-sm text-gray-700 mt-3">
+                <strong>Tracking Number:</strong> {selectedOrder.trackingNumber}
+              </p>
+            )}
+            {selectedOrder.trackingUrl && (
+              <a
+                href={selectedOrder.trackingUrl}
+                target="_blank"
+                className="text-blue-600 underline text-sm block mt-1"
+              >
+                Track Shipment on courier website
+              </a>
+            )}
+
+            {/* Buttons */}
             <div className="flex justify-between mt-5">
               <button
                 onClick={() => handleReorder(selectedOrder)}
@@ -316,7 +332,7 @@ export default function OrdersPage() {
                 onClick={() => handleTrack(selectedOrder)}
                 className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200"
               >
-                <Truck className="w-4 h-4" /> Track Order
+                <Truck className="w-4 h-4" /> Track Timeline
               </button>
             </div>
 

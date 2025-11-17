@@ -158,3 +158,42 @@ export const sendThankYouEmail = async (email: string, orderId: string) => {
     html,
   });
 };
+
+export const sendOrderNotification = async (email: string, orderId: string, status: string) => {
+  const statusMessages: Record<string, string> = {
+    pending: "Your order has been received and is pending confirmation.",
+    paid: "Payment received! Your order is confirmed.",
+    processing: "Your order is being prepared.",
+    shipping: "Your order is on the way!",
+    delivered: "Your order has been delivered!",
+    received: "Thanks for confirming receipt!",
+    cod_pending: "Your COD order is pending.",
+    cod_on_delivery: "Your COD order is out for delivery.",
+    cod_delivered: "Your COD order has been delivered.",
+    cancelled: "Your order was cancelled.",
+  };
+
+  const message = statusMessages[status] || "Your order status has been updated.";
+
+  const transporter = await getTransporter();
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; padding: 20px;">
+      ${shopEaseLogo}
+      <h2 style="color:#196D1A;">Order Update</h2>
+      <p>Order <strong>#${orderId}</strong> status is now: <strong>${status}</strong></p>
+      <p>${message}</p>
+      <p>
+        Track your order anytime: 
+        <a href="${process.env.NEXT_PUBLIC_BASE_URL}/orders">View Orders</a>
+      </p>
+    </div>
+  `;
+
+  await transporter.sendMail({
+    from: `"ShopEase" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: `Order #${orderId} Status Update`,
+    html,
+  });
+};

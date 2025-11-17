@@ -2,9 +2,17 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import axios from "axios";
 import { toast, Toaster } from "sonner";
 import { useCart } from "@/hooks/useCart";
-import axios from "axios";
+// import PaystackPop from "@paystack/inline-js";
+
+interface CartItem {
+  productId?: string;
+  product?: { _id: string };
+  quantity: number;
+  price: number;
+}
 
 export default function PaymentPage() {
   const router = useRouter();
@@ -12,16 +20,19 @@ export default function PaymentPage() {
 
   const [selected, setSelected] = useState("");
   const [shipping, setShipping] = useState<any>(null);
-  const [items, setItems] = useState<any[]>([]);
-  const [total, setTotal] = useState<number>(0);
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [total, setTotal] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
+  // const [flutterLoaded, setFlutterLoaded] = useState(false);
+  const [PaystackPop, setPaystackPop] = useState<any>(null);
 
-  // Load Flutterwave script
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.flutterwave.com/v3.js";
-    document.body.appendChild(script);
-  }, []);
+  // Load Flutterwave
+  // useEffect(() => {
+  //   const script = document.createElement("script");
+  //   script.src = "https://checkout.flutterwave.com/v3.js";
+  //   script.onload = () => setFlutterLoaded(true);
+  //   document.body.appendChild(script);
+  // }, []);
 
   // Load query params
   useEffect(() => {
@@ -29,29 +40,35 @@ export default function PaymentPage() {
 
     const { shipping, items, total } = router.query;
 
-    if (shipping && items && total) {
-      try {
-        setShipping(JSON.parse(shipping as string));
-        setItems(JSON.parse(items as string));
-        setTotal(Number(total));
-      } catch (err) {
-        console.error("Parsing error:", err);
-        toast.error("Failed to load payment details");
-      }
+    try {
+      setShipping(JSON.parse(String(shipping)));
+      setItems(JSON.parse(String(items)));
+      setTotal(Number(total));
+    } catch {
+      toast.error("Failed to load payment details");
     }
   }, [router.isReady]);
 
   const paymentMethods = [
     { id: "paystack", label: "Paystack" },
-    { id: "flutterwave", label: "Flutterwave" },
+    // { id: "flutterwave", label: "Flutterwave" },
     { id: "cod", label: "Cash on Delivery" },
   ];
 
-  // PAYSTACK
-  const handlePaystackPayment = async () => {
-    if (!shipping) return toast.error("Shipping details missing");
+  // PAYSTACK PAYMENT
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      import("@paystack/inline-js").then((module) => {
+        setPaystackPop(() => module.default);
+      });
+    }
+  }, []);
 
-    const PaystackPop = (await import("@paystack/inline-js")).default;
+  const handlePaystackPayment = () => {
+    if (!PaystackPop) {
+      return toast.error("Paystack is still loading...");
+    }
+
     const paystack = new PaystackPop();
 
     paystack.newTransaction({
@@ -59,73 +76,86 @@ export default function PaymentPage() {
       email: shipping.email,
       amount: total * 100,
       currency: "NGN",
-      onSuccess: async () => {
-        toast.success("Payment successful!");
 
-        await axios.post("/api/order", {
-          items: items.map((i: any) => ({
-            product: i.productId,
-            quantity: i.quantity,
-            price: i.price,
-          })),
-          shipping,
-          total,
-          paymentMethod: "paystack",
-        });
-
-        await clearCart.mutateAsync();
-        setIsProcessing(false);
-        router.push("/order-success");
-      },
-      onCancel: () => {
-        toast.warning("Payment cancelled.");
-        setIsProcessing(false);
-      },
-    });
-  };
-
-  // FLUTTERWAVE
-  const payWithFlutterwave = () => {
-    if (!shipping) return;
-
-    // @ts-ignore
-    window.FlutterwaveCheckout({
-      public_key: process.env.NEXT_PUBLIC_FLW_PUBLIC_KEY!,
-      tx_ref: `tx-${Date.now()}`,
-      amount: total,
-      currency: "NGN",
-      payment_options: "card, ussd, banktransfer",
-      customer: {
-        email: shipping.email,
-        phone_number: shipping.phone,
-        name: shipping.name,
-      },
-      callback: async function (response: any) {
-        if (response.status === "successful") {
-          await axios.post("/api/order", {
-            items: items.map((i: any) => ({
-              product: i.productId,
+      onSuccess: async (response: any) => {
+        try {
+          const orderRes = await axios.post("/api/order", {
+            items: items.map((i: CartItem) => ({
+              product: i.productId || i.product?._id,
               quantity: i.quantity,
               price: i.price,
             })),
             shipping,
             total,
-            paymentMethod: "flutterwave",
+            paymentMethod: "paystack",
+            reference: response.reference,
+          });
+
+          const orderId = orderRes.data.order._id;
+
+          await axios.post("/api/paystack/verify", {
+            reference: response.reference,
+            orderId,
           });
 
           await clearCart.mutateAsync();
           router.push("/order-success");
+        } catch (err) {
+          toast.error("Order saving failed.");
         }
       },
-      onclose: () => toast.error("Payment closed."),
+
+      onCancel: () => toast.error("Payment cancelled."),
     });
   };
 
-  // COD
+  // FLUTTERWAVE PAYMENT
+  // const handleFlutterwave = () => {
+  //   if (!flutterLoaded) return toast.error("Flutterwave loading...");
+
+  //   // @ts-ignore
+  //   window.FlutterwaveCheckout({
+  //     public_key: process.env.NEXT_PUBLIC_FLW_PUBLIC_KEY,
+  //     tx_ref: `tx-${Date.now()}`,
+  //     amount: total,
+  //     currency: "NGN",
+  //     customer: {
+  //       email: shipping.email,
+  //       phone_number: shipping.phone,
+  //       name: shipping.name,
+  //     },
+
+  //     callback: async (response: any) => {
+  //       const orderRes = await axios.post("/api/order", {
+  //         items: items.map((i: CartItem) => ({
+  //           product: i.productId || i.product?._id,
+  //           quantity: i.quantity,
+  //           price: i.price,
+  //         })),
+  //         shipping,
+  //         total,
+  //         paymentMethod: "flutterwave",
+  //         reference: response.tx_ref,
+  //       });
+
+  //       const orderId = orderRes.data.order._id;
+
+  //       await axios.post("/api/flutterwave/verify", {
+  //         transaction_id: response.transaction_id,
+  //         orderId,
+  //       });
+
+  //       await clearCart.mutateAsync();
+  //       router.push("/order-success");
+  //     },
+  //   });
+  // };
+
+  // CASH ON DELIVERY
   const handleCOD = async () => {
     await axios.post("/api/order", {
-      items: items.map((i: any) => ({
-        product: i.productId,
+      items: items.map((i: CartItem) => ({
+        product: i.productId || i.product?._id,
         quantity: i.quantity,
         price: i.price,
       })),
@@ -134,49 +164,42 @@ export default function PaymentPage() {
       paymentMethod: "cod",
     });
 
-    toast.success("Order placed successfully!");
     await clearCart.mutateAsync();
-    setIsProcessing(false);
     router.push("/order-success");
   };
 
   const handlePayment = () => {
     if (!selected) return toast.error("Select a payment method");
-
     setIsProcessing(true);
 
     if (selected === "paystack") handlePaystackPayment();
-    else if (selected === "flutterwave") payWithFlutterwave();
+    // else if (selected === "flutterwave") handleFlutterwave();
     else handleCOD();
   };
 
-  if (!shipping) {
-    return (
-      <div className="flex items-center justify-center h-[80vh]">
-        <p className="text-gray-600">Loading payment details...</p>
-      </div>
-    );
-  }
+  if (!shipping)
+    return <div className="text-center p-10">Loading...</div>;
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 rounded-2xl shadow-md border bg-white">
+    <div className="max-w-md mx-auto mt-10 p-6 bg-white border rounded-xl shadow">
       <Toaster richColors />
-      <h1 className="text-2xl font-bold mb-4 text-center">Select Payment Method</h1>
+
+      <h1 className="text-xl font-bold text-center mb-4">Choose Payment Method</h1>
 
       <div className="space-y-3">
-        {paymentMethods.map((method) => (
+        {paymentMethods.map((m) => (
           <label
-            key={method.id}
-            className={`flex items-center text-black p-3 border rounded-xl cursor-pointer hover:bg-gray-100 ${selected === method.id ? "border-blue-600" : ""
+            key={m.id}
+            className={`p-3 text-black border rounded-xl flex items-center cursor-pointer ${selected === m.id ? "border-blue-600" : ""
               }`}
           >
             <input
               type="radio"
-              checked={selected === method.id}
-              onChange={() => setSelected(method.id)}
+              onChange={() => setSelected(m.id)}
+              checked={selected === m.id}
               className="mr-3"
             />
-            <span>{method.label}</span>
+            {m.label}
           </label>
         ))}
       </div>
@@ -184,7 +207,7 @@ export default function PaymentPage() {
       <button
         onClick={handlePayment}
         disabled={isProcessing}
-        className="w-full mt-6 py-3 bg-blue-600 text-white rounded-xl"
+        className="mt-6 w-full py-3 rounded-xl bg-blue-600 text-white"
       >
         {isProcessing ? "Processing..." : "Continue"}
       </button>

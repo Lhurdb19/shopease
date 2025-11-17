@@ -10,7 +10,7 @@ export interface IProduct extends Document {
     required: true,
     default: [],
   };
-  stock: number;
+  stock: { type: Number, required: true, default: 0 },
   category: string; // category now stored as a string
   createdBy: mongoose.Types.ObjectId;
   active: boolean;
@@ -25,7 +25,7 @@ const ProductSchema = new Schema<IProduct>(
     description: String,
     price: { type: Number, required: true },
     images: [{ type: String, required: true }],
-    stock: { type: Number, default: 0 },
+    stock: { type: Number, required: true, default: 0 },
     category: { type: String, required: true }, // simple string category
     createdBy: { type: Schema.Types.ObjectId, ref: "User" },
     active: { type: Boolean, default: true },
