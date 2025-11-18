@@ -67,7 +67,7 @@ export default function SuperAdminLayout({ children, userName }: Props) {
     { href: "/superadmin/logs", label: "Audit Logs", icon: Logs },
     { href: "/superadmin/notifications", label: "Notifications", icon: Bell },
     { href: "/superadmin/reports", label: "Reports & Analytics", icon: Text },
-    { href: "/superadmin/payment-methods", label: "Payment Methods", icon: Text },
+    // { href: "/superadmin/payment-methods", label: "Payment Methods", icon: Text },
     {href: "/superadmin/newsletter", label: "Newsletter Subscribers", icon: Newspaper },
     {href: "/superadmin/about", label: "About Us", icon: UserCircle },
     {href: "/superadmin/contact", label: "Contact Info", icon: Contact },

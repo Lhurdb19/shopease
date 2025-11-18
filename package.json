@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "registry:build": "shadcn build",
-    "seed": "node --loader ts-node/esm seed.ts"
+    "seed": "node --loader ts-node/esm seed.ts",
+    "fix-index": "node scripts/fixSlugIndex.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -89,7 +90,7 @@
     "@types/file-saver": "^2.0.7",
     "@types/formidable": "^3.4.6",
     "@types/jwt-decode": "^2.2.1",
-    "@types/node": "^20.19.23",
+    "@types/node": "^20.19.25",
     "@types/nodemailer": "^7.0.2",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",

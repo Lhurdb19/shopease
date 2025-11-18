@@ -170,13 +170,13 @@ export default function ProductPage({ product }: ProductPageProps) {
 export const getServerSideProps: GetServerSideProps = async (context) => {
   await connectDB();
 
-  const slug = context.params?.slug as string;
+  const slug = context.params?.slug?.toString().toLowerCase();
 
   if (!slug) return { notFound: true };
 
   try {
     // ✅ Case-insensitive slug search
-    const product = await Product.findOne({ slug: { $regex: `^${slug}$`, $options: "i" } })
+    const product = await Product.findOne({ slug })
       .populate("createdBy", "name email")
       .lean();
 

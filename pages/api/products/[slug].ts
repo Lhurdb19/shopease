@@ -6,13 +6,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   await connectDB();
 
   try {
-    const slug = (Array.isArray(req.query.slug) ? req.query.slug[0] : req.query.slug)?.trim();
+    const slug = (Array.isArray(req.query.slug) ? req.query.slug[0] : req.query.slug)?.toLowerCase().trim();
     if (!slug) return res.status(400).json({ message: "Invalid slug" });
 
-
-    // console.log("Requested slug:", slug);
-
-    const product = await Product.findOne({ slug: { $regex: `^${slug}$`, $options: "i" } })
+    const product = await Product.findOne({ slug: slug.toLowerCase() })
       .populate("createdBy", "name email")
       .lean();
 
@@ -23,6 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     return res.status(200).json(product);
+    
   } catch (error) {
     console.error("SLUG API ERROR:", error);
     return res.status(500).json({ message: "Server error" });

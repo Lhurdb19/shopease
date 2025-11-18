@@ -79,7 +79,6 @@ export function AppSidebar() {
     { title: "Notifications", url: "/admin/notifications", icon: Bell },
     { title: "Blogs", url: "/admin/blog", icon: Network },
     { title: "Settings", url: "/admin/settings", icon: Settings },
-    { title: "Payment Methods", url: "/admin/payment-method", icon: CarTaxiFront },
     { title: "Update Password", url: "/changepassword-form", icon: LockKeyhole },
   ];
 

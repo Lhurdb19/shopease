@@ -17,7 +17,14 @@ export interface IProduct extends Document {
 const ProductSchema = new Schema<IProduct>(
   {
     title: { type: String, required: true },
-    slug: { type: String, required: true, unique: true, index: true },
+    slug: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true, // 🔥 FIXES PRODUCTION INDEX ISSUES
+      trim: true,
+      index: true,
+    },
 
     description: { type: String },
 
