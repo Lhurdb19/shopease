@@ -1,3 +1,5 @@
+//blog/[slug].ts
+
 import { NextApiRequest, NextApiResponse } from "next";
 import { connectDB } from "@/lib/db";
 import Blog from "@/models/Blog";

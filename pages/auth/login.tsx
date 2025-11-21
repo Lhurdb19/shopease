@@ -1,6 +1,5 @@
 "use client";
 
-// import Logo from "@/components/logo";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -25,18 +24,9 @@ export default function LoginPage() {
       const otpVerified = session?.user?.otpVerified;
       const suspended = (session.user as any)?.suspended;
 
-      // ✅ If suspended, redirect to suspended page
-      if (suspended) {
-        router.replace("/auth/suspended");
-        return;
-      }
-
-      if (!otpVerified) {
-        router.replace("/auth/verify-otp");
-        return;
-      }
-
-      if (role === "superadmin") router.replace("/superadmin/dashboard");
+      if (suspended) router.replace("/auth/suspended");
+      else if (!otpVerified) router.replace("/auth/verify-otp");
+      else if (role === "superadmin") router.replace("/superadmin/dashboard");
       else if (role === "admin") router.replace("/admin/dashboard");
       else router.replace("/");
     }
@@ -99,7 +89,9 @@ export default function LoginPage() {
   if (status === "authenticated") return null;
 
   return (
-    <div className="fixed top-0 z-50 w-full h-screen flex flex-col lg:flex-row justify-center items-center gap-6 lg:gap-10 px-4 lg:px-[100px] bg-[rgba(0,0,0,1.0)]">
+    <div className="min-h-screen w-full flex flex-col lg:flex-row justify-center items-start gap-6 lg:gap-10 p-4 lg:p-[100px] bg-[rgba(0,0,0,1.0)] overflow-auto">
+      
+      {/* Left Image */}
       <div className="hidden relative lg:block w-[850px] h-[600px] rounded-2xl overflow-hidden">
         <Image
           src="/store.jpg"
@@ -110,16 +102,17 @@ export default function LoginPage() {
         />
       </div>
 
-      <div className="w-full lg:w-1/3 flex flex-col text-white">
+      {/* Right Form */}
+      <div className="w-full lg:w-1/3 flex flex-col text-white -translate-y-6">
         <div className="-mb-2 flex items-center justify-between">
-          {/* ✅ Dynamic Logo */}
-          <Link href="/" className="flex items-center gap-2">
+          {/* Logo */}
+          <Link href="/" className="flex items-start gap-2">
             {settings?.logo ? (
               <Image
                 src={settings.logo}
                 alt={settings.siteName || "Logo"}
                 width={200}
-                height={200}
+                height={150}
                 className="rounded-md object-contain"
               />
             ) : (
@@ -127,10 +120,9 @@ export default function LoginPage() {
                 <span className="text-green-600">Shop</span>Ease
               </span>
             )}
-            {!settings?.logo && <span className="sr-only">{settings?.siteName || "ShopEase"}</span>}
           </Link>
           <Link href="/auth/register">
-            <p className="text-[#196D1A] hover:text-[#fff] font-thin text-sm">
+            <p className="text-[#196D1A] hover:text-[#fff] font-thin text-[10px] lg:text-sm xl:text-sm">
               Not Registered Yet? Signup.
             </p>
           </Link>
@@ -138,40 +130,40 @@ export default function LoginPage() {
 
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col gap-4 w-full h-[550px] border border-[#196d1a] rounded-xl p-6 bg-gray-900"
+          className="flex flex-col gap-3 w-auto h-auto lg:h-[560px] border border-[#196d1a] rounded-xl p-3 lg:p-6 bg-gray-900"
         >
-          <h2 className="text-2xl font-bold">Welcome Back</h2>
+          <h2 className="text-xl lg:text-2xl xl:text-2xl font-bold">Welcome Back</h2>
 
+          {/* Email */}
           <input
             type="email"
             name="email"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
             placeholder="Email"
-            className={`w-full p-4 text-[#fff] border rounded focus:outline-none focus:ring-2 ${emailError ? "border-red-500 focus:ring-red-500" : "border-gray-500 focus:ring-[#196D1A]"
-              }`}
+            className={`w-full p-1 lg:p-3 text-[#fff] border rounded focus:outline-none focus:ring-2 ${emailError ? "border-red-500 focus:ring-red-500" : "border-gray-500 focus:ring-[#196D1A]"}`}
             required
           />
-
           {emailError && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded text-sm">
               {emailError} <span className="underline cursor-pointer text-blue-700">LEARN MORE</span>
             </div>
           )}
 
+          {/* Password */}
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
-              placeholder="Enter your password"
+              placeholder="Password"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="w-full text-[#fff] border border-gray-500 px-3 py-4 rounded focus:outline-none focus:ring-2 focus:ring-[#196D1A] pr-10"
+              className="w-full p-1 lg:p-3 text-[#fff] border border-gray-500 rounded focus:outline-none focus:ring-2 focus:ring-[#196D1A] pr-10"
               required
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-300"
+              className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-200"
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
@@ -184,8 +176,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className={`bg-[#196D1A] text-white py-4 rounded hover:bg-green-600 transition ${loading ? "opacity-70 cursor-not-allowed" : ""
-              }`}
+            className={`bg-[#196D1A] text-white p-1 lg:p-3 rounded hover:bg-green-600 transition ${loading ? "opacity-70 cursor-not-allowed" : ""}`}
           >
             {loading ? "Logging in..." : "Login"}
           </button>

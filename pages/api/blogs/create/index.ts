@@ -1,7 +1,10 @@
+// api/blog/create/index.ts
+
 import { connectDB } from "@/lib/db";
 import Blog from "@/models/Blog";
 import { uploadBase64 } from "@/lib/cloudinary";
 import { NextApiRequest, NextApiResponse } from "next";
+import { create } from "domain";
 
 export default async function handler(req:NextApiRequest, res:NextApiResponse) {
   if (req.method !== "POST") return res.status(405).json({ message: "Method not allowed" });

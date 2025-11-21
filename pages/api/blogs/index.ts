@@ -1,3 +1,5 @@
+// api/blogs/index.ts
+
 import { NextApiRequest, NextApiResponse } from "next";
 import { connectDB } from "@/lib/db";
 import Blog from "@/models/Blog";
@@ -7,20 +9,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     if (req.method === "GET") {
-      const blogs = await Blog.find().sort({ createdAt: -1 });
+      const blogs = await Blog.find().sort({ createdAt: -1 }); // return all blogs
       return res.status(200).json(blogs);
     }
 
     if (req.method === "POST") {
-      const { title, content, image, category, author } = req.body;
+      const { title, content, image, category, author, slug, externalUrl } = req.body;
 
-      // ✅ Ensure image is provided
       const blog = await Blog.create({
         title,
         content,
         image: image || "",
         category: category || "Other",
         author: author || "Admin",
+        slug,
+        externalUrl: externalUrl || "",
       });
 
       return res.status(201).json(blog);

@@ -15,14 +15,21 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem
+} from "@/components/ui/select";
 
-// ✅ Dynamically import React Quill (Client-only)
-const ReactQuillWrapper = dynamic(async () => (await import("react-quill-new")).default, {
-  ssr: false,
-});
+// Dynamically import Quill
+const ReactQuillWrapper: any = dynamic(
+  async () => (await import("react-quill-new")).default,
+  { ssr: false }
+);
 
-// ✅ Type for Blog
+// Blog type
 interface Blog {
   _id: string;
   title: string;
@@ -31,9 +38,9 @@ interface Blog {
   category: string;
 }
 
-// ✅ Main Component
 export default function AdminBlogsPage() {
-  const quillRef = useRef<any>(null); // TS ignored for now (ReactQuill issue)
+  const quillRef = useRef<any>(null);
+
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [image, setImage] = useState("");
@@ -42,7 +49,7 @@ export default function AdminBlogsPage() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
-  // ✅ Modal States
+  // Popups
   const [showPreview, setShowPreview] = useState<Blog | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -50,7 +57,7 @@ export default function AdminBlogsPage() {
   const [showLinkPopup, setShowLinkPopup] = useState(false);
   const [linkUrl, setLinkUrl] = useState("");
 
-  // ✅ Fetch all blogs on mount
+  // Fetch blogs on mount
   useEffect(() => {
     fetchBlogs();
   }, []);
@@ -59,20 +66,32 @@ export default function AdminBlogsPage() {
     try {
       const res = await fetch("/api/blogs");
       const data = await res.json();
-      setBlogs(data);
-    } catch (e) {
+
+      console.log("API RESULT:", data);
+
+      // Protect against wrong formats
+      if (Array.isArray(data)) {
+        setBlogs(data);
+      } else if (Array.isArray(data.blogs)) {
+        setBlogs(data.blogs);
+      } else {
+        setBlogs([]);
+      }
+
+    } catch (err) {
       toast.error("Failed to load blogs");
+      setBlogs([]);
     }
   };
 
-  // ✅ Close dropdown menu on outside click
+  // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = () => setOpenMenu(null);
-    window.addEventListener("click", handleClickOutside);
-    return () => window.removeEventListener("click", handleClickOutside);
+    const handleClick = () => setOpenMenu(null);
+    window.addEventListener("click", handleClick);
+    return () => window.removeEventListener("click", handleClick);
   }, []);
 
-  // ✅ Image Upload
+  // Upload image
   const handleImageUpload = async () => {
     const input = document.createElement("input");
     input.type = "file";
@@ -88,10 +107,10 @@ export default function AdminBlogsPage() {
       formData.append("folder", "mystore/blogs");
 
       toast.info("Uploading image...");
+
       try {
         const res = await axios.post("/api/cloudinary-upload", formData);
         const imageUrl = res.data.url;
-
         setImage(imageUrl);
 
         const quill = quillRef.current?.getEditor?.();
@@ -101,13 +120,12 @@ export default function AdminBlogsPage() {
         setShowImagePopup(true);
         toast.success("Image uploaded successfully!");
       } catch (err: any) {
-        console.error("Upload error:", err.message);
         toast.error("Image upload failed");
       }
     };
   };
 
-  // ✅ Quill Toolbar Config
+  // Quill toolbar
   const modules = {
     toolbar: {
       container: [
@@ -124,23 +142,26 @@ export default function AdminBlogsPage() {
     },
   };
 
-  // ✅ Submit a blog
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Create blog
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
-    if (!title || !content) return toast.error("Please fill all fields");
+
+    if (!title || !content)
+      return toast.error("Please fill all fields");
 
     setLoading(true);
+
     try {
       const res = await axios.post("/api/blogs", {
         title,
         content,
         image,
         category,
-        author: "SuperAdmin",
+        author: "SuperAdmin"
       });
 
       if (res.status === 201) {
-        toast.success("🎉 Blog post created!");
+        toast.success("🎉 Blog created!");
         setTitle("");
         setContent("");
         setImage("");
@@ -148,19 +169,17 @@ export default function AdminBlogsPage() {
         setShowSuccessModal(true);
         fetchBlogs();
       }
-    } catch (error) {
+    } catch (err) {
       toast.error("Failed to create blog");
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Delete a blog
-  const confirmDelete = (id: string) => setShowDeleteModal(id);
-
-  const handleDelete = async (id: string) => {
+  // Delete blog
+  const handleDelete = async (slug: string) => {
     try {
-      await axios.delete(`/api/blogs/${id}`);
+      await axios.delete(`/api/blogs/${slug}`);
       toast.success("Blog deleted");
       setShowDeleteModal(null);
       fetchBlogs();
@@ -169,37 +188,41 @@ export default function AdminBlogsPage() {
     }
   };
 
-  // ✅ Insert link handler
+  // Insert link
   const handleInsertLink = () => {
     const quill = quillRef.current?.getEditor?.();
     const range = quill?.getSelection();
+
     if (!range || !linkUrl) return;
+
     quill.format("link", linkUrl);
     setLinkUrl("");
     setShowLinkPopup(false);
   };
 
-  const categoryStyles: Record<string, string> = {
+  const categoryStyles: any = {
     News: "bg-green-600 text-white",
     Announcements: "bg-blue-600 text-white",
     Tips: "bg-red-600 text-white",
-    Tutorials: "bg-white text-black",
+    Tutorials: "bg-gray-200 text-black",
     Other: "bg-black text-white",
   };
 
   return (
-    <div className="max-w-7xl mx-auto py-10 px-6 text-white relative">
+    <div className="max-w-7xl mx-auto py-10 px-6 text-white">
+
       <h1 className="text-3xl font-bold mb-6 text-center">✍️ Manage Blog Posts</h1>
 
-      {/* 📝 New Blog Form */}
+      {/* CREATE BLOG FORM */}
       <Card className="bg-gray-900 border-gray-700 text-white mb-10">
         <CardHeader>
-          <CardTitle>Create New Blog</CardTitle>
+          <CardTitle>Create a New Blog</CardTitle>
         </CardHeader>
+
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+
             <Input
-              type="text"
               placeholder="Blog title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -208,8 +231,8 @@ export default function AdminBlogsPage() {
             />
 
             <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger className="text-black bg-white">
-                <SelectValue placeholder="Select Category" />
+              <SelectTrigger className="bg-white text-black">
+                <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Other">Other</SelectItem>
@@ -227,36 +250,37 @@ export default function AdminBlogsPage() {
               onChange={setContent}
               modules={modules}
               placeholder="Write your blog content..."
-              className="text-black bg-white"
+              className="bg-white text-black"
             />
 
             {image && (
               <div className="mt-3">
-                <p className="text-sm mb-1">Featured Image Preview:</p>
+                <p className="text-sm">Featured Image:</p>
                 <Image
+                  src={image}
                   width={200}
                   height={200}
-                  src={image}
-                  alt="Uploaded"
+                  alt="Preview"
                   className="rounded-lg border w-40 h-40 object-cover"
                 />
               </div>
             )}
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="bg-green-600 hover:bg-green-700 text-white mt-4"
-            >
-              {loading ? "Publishing..." : "Publish Post"}
+            <Button type="submit" disabled={loading} className="bg-green-600 hover:bg-green-700 text-white mt-4">
+              {loading ? "Publishing..." : "Publish Blog"}
             </Button>
           </form>
         </CardContent>
       </Card>
 
-      {/* 🗂 Blog List */}
+      {/* BLOG LIST */}
       <h2 className="text-2xl font-semibold mb-4">All Blogs</h2>
+
       <div className="grid md:grid-cols-4 gap-8">
+        {blogs.length === 0 && (
+          <p className="text-gray-400">No blog posts found.</p>
+        )}
+
         {blogs.map((blog) => (
           <Card
             key={blog._id}
@@ -264,6 +288,8 @@ export default function AdminBlogsPage() {
             className="bg-gray-900 border-gray-700 text-white cursor-pointer relative hover:shadow-green-500/20 transition-all"
           >
             <CardContent className="p-4">
+
+              {/* ICON MENU */}
               <div
                 className="absolute top-3 right-3 z-20"
                 onClick={(e) => {
@@ -272,6 +298,7 @@ export default function AdminBlogsPage() {
                 }}
               >
                 <MoreVertical className="text-gray-300 cursor-pointer" />
+
                 {openMenu === blog._id && (
                   <div
                     className="absolute right-0 mt-2 bg-gray-800 border border-gray-700 rounded-lg shadow-lg w-44 p-2 z-50"
@@ -279,7 +306,7 @@ export default function AdminBlogsPage() {
                   >
                     <Button
                       variant="ghost"
-                      onClick={() => confirmDelete(blog._id)}
+                      onClick={() => setShowDeleteModal(blog._id)}
                       className="text-red-500 hover:bg-gray-700 w-full text-left"
                     >
                       Delete
@@ -289,16 +316,17 @@ export default function AdminBlogsPage() {
               </div>
 
               <Image
+                src={blog.image}
                 width={300}
                 height={300}
-                src={blog.image}
                 alt={blog.title}
                 className="rounded-lg mb-3 w-full h-40 object-cover"
               />
 
               <h3 className="text-lg font-semibold line-clamp-1">{blog.title}</h3>
+
               <p
-                className={`text-[11px] px-2 py-1 rounded inline-block mt-1 ${categoryStyles[blog.category] || "bg-gray-700 text-white"}`}
+                className={`text-[11px] px-2 py-1 rounded inline-block mt-1 ${categoryStyles[blog.category]}`}
               >
                 {blog.category}
               </p>
@@ -312,16 +340,18 @@ export default function AdminBlogsPage() {
         ))}
       </div>
 
-      {/* ✅ POPUPS BELOW */}
+      {/* POPUPS BELOW */}
 
-      {/* 🔗 Link Popup */}
+      {/* Insert Link Popup */}
       {showLinkPopup && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl text-black w-[90%] max-w-sm relative">
             <button onClick={() => setShowLinkPopup(false)} className="absolute top-2 right-2">
               <X className="text-gray-600" />
             </button>
+
             <h3 className="text-lg font-bold mb-3">Insert Link</h3>
+
             <Input
               type="url"
               placeholder="Enter URL"
@@ -329,6 +359,7 @@ export default function AdminBlogsPage() {
               onChange={(e) => setLinkUrl(e.target.value)}
               className="mb-4"
             />
+
             <Button onClick={handleInsertLink} className="bg-green-600 text-white w-full">
               Insert
             </Button>
@@ -336,31 +367,41 @@ export default function AdminBlogsPage() {
         </div>
       )}
 
-      {/* 🖼 Image Uploaded Popup */}
+      {/* Image Uploaded Popup */}
       {showImagePopup && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl text-center text-black relative">
             <button onClick={() => setShowImagePopup(false)} className="absolute top-2 right-2">
               <X className="text-gray-600" />
             </button>
+
             <h3 className="text-lg font-bold mb-3">Image Uploaded!</h3>
+
             <Image src={image} alt="Uploaded" width={150} height={150} className="rounded-lg mx-auto" />
-            <p className="mt-3 text-gray-600">Your image was successfully uploaded to Cloudinary.</p>
+
+            <p className="mt-3 text-gray-600">Your image was successfully uploaded.</p>
           </div>
         </div>
       )}
 
-      {/* 🗑 Delete Confirmation Popup */}
+      {/* Delete confirm modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-white text-black p-6 rounded-xl w-[90%] max-w-sm">
             <h3 className="font-bold mb-3">Are you sure?</h3>
-            <p className="text-gray-600 mb-5">This action will permanently delete this blog post.</p>
+            <p className="text-gray-600 mb-5">
+              This action will permanently delete this blog post.
+            </p>
+
             <div className="flex justify-between">
               <Button onClick={() => setShowDeleteModal(null)} className="bg-gray-400 text-white">
                 Cancel
               </Button>
-              <Button onClick={() => handleDelete(showDeleteModal)} className="bg-red-600 text-white">
+
+              <Button
+                onClick={() => handleDelete(showDeleteModal)}
+                className="bg-red-600 text-white"
+              >
                 Delete
               </Button>
             </div>
@@ -368,35 +409,39 @@ export default function AdminBlogsPage() {
         </div>
       )}
 
-      {/* ✅ Blog Preview Popup */}
+      {/* Blog Preview */}
       {showPreview && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 overflow-y-auto">
           <div className="bg-white text-black p-6 rounded-xl max-w-2xl w-[95%] relative">
             <button onClick={() => setShowPreview(null)} className="absolute top-2 right-2">
               <X className="text-gray-700" />
             </button>
+
             <Image
               src={showPreview.image}
-              alt={showPreview.title}
               width={500}
               height={300}
+              alt={showPreview.title}
               className="rounded-lg w-full h-60 object-cover mb-4"
             />
+
             <h2 className="text-2xl font-bold mb-2">{showPreview.title}</h2>
-            <p
-              className="text-gray-700 mb-4"
+
+            <div
+              className="text-gray-700"
               dangerouslySetInnerHTML={{ __html: showPreview.content }}
             />
           </div>
         </div>
       )}
 
-      {/* 🎉 Success Popup */}
+      {/* Success popup */}
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl text-center text-black">
             <h3 className="text-lg font-bold mb-2">🎉 Blog Published!</h3>
             <p>Your blog has been successfully posted.</p>
+
             <Button
               onClick={() => setShowSuccessModal(false)}
               className="bg-green-600 text-white mt-4"

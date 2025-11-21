@@ -80,7 +80,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="fixed top-0 w-full h-screen flex flex-col lg:flex-row justify-center items-center gap-6 lg:gap-10 px-4 lg:px-[100px] bg-[rgba(0,0,0,1.0)] z-100">
+    <div className="min-h-screen w-full flex flex-col lg:flex-row justify-center items-center gap-6 lg:gap-10 p-4 lg:p-[100px] bg-[rgba(0,0,0,1.0)] overflow-auto">
       {/* Left Image */}
       <div className="hidden relative lg:block w-[850px] h-[600px] rounded-2xl overflow-hidden">
         <Image
@@ -130,7 +130,7 @@ export default function RegisterPage() {
             {!settings?.logo && <span className="sr-only">{settings?.siteName || "ShopEase"}</span>}
           </Link>
           <Link href="/auth/login">
-            <p className="text-[#196D1A] hover:text-[#fff] font-thin text-sm">
+            <p className="text-[#196D1A] hover:text-[#fff] font-thin text-[10px] lg:text-sm xl:text-sm">
               Already Registered? Login.
             </p>
           </Link>
@@ -138,17 +138,17 @@ export default function RegisterPage() {
 
         <form
           onSubmit={handleRegister}
-          className="flex flex-col gap-4 w-full h-auto border border-[#196d1a] rounded-xl p-6 bg-gray-900"
+          className="flex flex-col gap-3 w-auto h-auto border border-[#196d1a] rounded-xl p-3 bg-gray-900"
         >
-          <h2 className="text-2xl font-bold">Create Account</h2>
+          <h2 className="text-xl lg:text-2xl xl:text-2xl font-bold">Create Account</h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <input
               type="text"
               placeholder="Full Name"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              className="w-full p-4 text-[#fff] border border-gray-500 rounded focus:ring-2 focus:ring-[#196D1A]"
+              className="w-full p-1 lg:p-3 text-[#fff] border border-gray-500 rounded focus:ring-2 focus:ring-[#196D1A]"
               required
             />
             <input
@@ -156,7 +156,7 @@ export default function RegisterPage() {
               placeholder="Email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full p-4 text-[#fff] border border-gray-500 rounded focus:ring-2 focus:ring-[#196D1A]"
+              className="w-full p-1 lg:p-3 text-[#fff] border border-gray-500 rounded focus:ring-2 focus:ring-[#196D1A]"
               required
             />
             <input
@@ -164,7 +164,7 @@ export default function RegisterPage() {
               placeholder="Phone"
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              className="w-full p-4 text-[#fff] border border-gray-500 rounded focus:ring-2 focus:ring-[#196D1A]"
+              className="w-full p-1 lg:p-3 text-[#fff] border border-gray-500 rounded focus:ring-2 focus:ring-[#196D1A]"
               required
             />
 
@@ -175,7 +175,7 @@ export default function RegisterPage() {
                 placeholder="Password"
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="w-full p-4 text-[#fff] border border-gray-500 rounded focus:ring-2 focus:ring-[#196D1A] pr-10"
+                className="w-full p-1 lg:p-3 text-[#fff] border border-gray-500 rounded focus:ring-2 focus:ring-[#196D1A] pr-10"
                 required
               />
               <button
@@ -189,15 +189,16 @@ export default function RegisterPage() {
           </div>
 
           {/* Password Rules */}
-          <div className="text-sm space-y-1">
+          {/* Password Rules */}
+          <div className="text-sm mb-2 mt-1 grid grid-cols-2 sm:grid-cols-1 gap-1 lg:gap-2">
             {Object.entries(passwordRules).map(([rule, valid]) => (
-              <div key={rule} className="flex items-center gap-2">
+              <div key={rule} className="flex items-center gap-1 lg:gap-2">
                 {valid ? (
-                  <CheckCircle className="text-[#196D1A]" size={14} />
+                  <CheckCircle className="text-[#196D1A]" size={10} />
                 ) : (
-                  <XCircle className="text-red-500" size={14} />
+                  <XCircle className="text-red-500" size={10} />
                 )}
-                <span className="text-[12px]">
+                <span className="text-[8px] sm:text-xs lg:text-sm">
                   {rule === "length" && "At least 6 characters"}
                   {rule === "uppercase" && "At least 1 uppercase letter"}
                   {rule === "lowercase" && "At least 1 lowercase letter"}
@@ -208,46 +209,47 @@ export default function RegisterPage() {
             ))}
           </div>
 
+
           {/* Role Selector */}
           <select
             value={form.role}
             onChange={(e) => setForm({ ...form, role: e.target.value })}
-            className="w-full text-[#fff] bg-gray-800 border border-gray-500 px-3 py-3 rounded text-[13px] focus:ring-2 focus:ring-[#196D1A]"
+            className="w-full text-[#fff] bg-gray-800 border border-gray-500 p-1 lg:p-3 rounded text-[12px] focus:ring-2 focus:ring-[#196D1A]"
           >
             <option value="user">User</option>
-            <option value="vendor">Vendor</option>
+            <option value="admin">Admin</option>
           </select>
 
           {/* Submit */}
           <button
             type="submit"
             disabled={!isFormComplete || loading}
-            className={`bg-[#196D1A] text-white py-4 rounded hover:bg-green-600 transition ${(!isFormComplete || loading) && "opacity-70 cursor-not-allowed"
+            className={`bg-[#196D1A] text-white p-1 lg:p-3 rounded hover:bg-green-600 transition ${(!isFormComplete || loading) && "opacity-70 cursor-not-allowed"
               }`}
           >
             {loading ? "Registering..." : "Register"}
           </button>
 
           {/* Divider */}
-          <div className="flex items-center gap-3 my-5">
+          <div className="flex items-center gap-2 my-1">
             <span className="flex-1 border border-gray-500"></span>
-            <span className="text-sm text-gray-400">or connect with</span>
+            <span className="text-[10px] lg:text-sm text-gray-400">or connect with</span>
             <span className="flex-1 border border-gray-500"></span>
           </div>
 
           {/* Google Sign-Up */}
           <button
             type="button"
-            className="flex items-center justify-center gap-3 border border-gray-500 py-4 rounded hover:bg-gray-800 transition"
+            className="flex items-center justify-center gap-3 border border-gray-500 py-2 rounded hover:bg-gray-800 transition"
           >
             <Image
               src="/google-logo.png"
               alt="Google"
               width={20}
               height={20}
-              className="w-5 h-5"
+              className="w-3 h-3 lg:w-5 lg:h-5"
             />
-            <span>Continue with Google</span>
+            <span className="text-[10px] sm:text-xl">Continue with Google</span>
           </button>
         </form>
       </div>
