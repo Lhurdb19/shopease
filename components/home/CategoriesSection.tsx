@@ -1,30 +1,25 @@
-import Link from "next/link";
-import { Skeleton } from "@/components/ui/skeleton";
-import ProductCard from "@/components/home/ProductCard";
+"use client";
 
-interface Product {
-  _id: string;
-  title: string;
-  price: number;
-  images: string[];
-  slug: string;
-}
+import Link from "next/link";
+import ProductCard from "./ProductCard";
+import { IProduct } from "@/models/Product";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Props {
+  id: string; // category id
   title: string;
-  slug: string;
-  products?: Product[];
+  products?: IProduct[];
   loading: boolean;
-  wishlist: string[];
-  toggleWishlist: (productId: string, title: string) => Promise<void>;
+  wishlist?: string[];
+  toggleWishlist?: (productId: string, title: string) => void;
 }
 
-export default function CategorySection({ title, slug, products, loading }: Props) {
+export default function CategorySection({ id, title, products = [], loading }: Props) {
   return (
     <section className="mb-10">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl sm:text-2xl font-bold">{title}</h2>
-        <Link href={`/category/${slug}`} className="text-blue-600 hover:underline">
+        <Link href={`/category/${id}`} className="text-blue-600 hover:underline">
           View All →
         </Link>
       </div>
@@ -37,7 +32,7 @@ export default function CategorySection({ title, slug, products, loading }: Prop
         </div>
       ) : (
         <div className="grid gap-4 lg:gap-10 xl:gap-10 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
-          {products?.map((product) => (
+          {products.map((product) => (
             <ProductCard key={product._id} product={product} />
           ))}
         </div>

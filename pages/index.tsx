@@ -6,35 +6,36 @@ import CategorySection from "@/components/home/CategoriesSection";
 import Testimonials from "@/components/home/Testimonials";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
+import FlashSales from "@/components/flashsales";
 
 export default function HomePage() {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(true);
-  const [categoryProducts, setCategoryProducts] = useState<any>({});
-  const [categories, setCategories] = useState<{ name: string; slug: string }[]>([]);
+  const [categoryProducts, setCategoryProducts] = useState<Record<string, any[]>>({});
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]); // product IDs
 
+  // Fetch categories & products
   useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch("/api/categories");
-      const data = await res.json();
-
-      const categoryList = data.categories.map((cat: string) => ({
-        name: cat,
-        slug: cat.toLowerCase(),
-      }));
-
-      setCategories(categoryList);
-
-      const results: any = {};
-      for (const category of categoryList) {
-        const res = await fetch(`/api/products?category=${category.slug}&limit=4`);
+      try {
+        const res = await fetch("/api/categories");
         const data = await res.json();
-        results[category.slug] = data.products;
-      }
+        setCategories(data.categories);
 
-      setCategoryProducts(results);
-      setLoading(false);
+        const results: Record<string, any[]> = {};
+        for (const cat of data.categories) {
+          const res = await fetch(`/api/products?categoryId=${cat.id}&limit=4`);
+          const productsData = await res.json();
+          results[cat.id] = productsData.products || [];
+        }
+
+        setCategoryProducts(results);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchData();
@@ -74,14 +75,10 @@ export default function HomePage() {
 
       if (data.success) {
         setWishlist((prev) =>
-          isInWishlist
-            ? prev.filter((id) => id !== productId)
-            : [...prev, productId]
+          isInWishlist ? prev.filter((id) => id !== productId) : [...prev, productId]
         );
         toast.success(
-          isInWishlist
-            ? `${title} removed from wishlist ❤️`
-            : `${title} added to wishlist ❤️`
+          isInWishlist ? `${title} removed from wishlist ❤️` : `${title} added to wishlist ❤️`
         );
       } else {
         toast.error(data.message || "Failed to update wishlist");
@@ -95,13 +92,14 @@ export default function HomePage() {
   return (
     <div>
       <Hero />
-      <div className="px-6 lg:px-25 xl:px-25 py-10 max-w-8xl">
+      <FlashSales/>
+      <div className="px-4 lg:px-25 xl:px-25 py-10 max-w-8xl">
         {categories.map((cat) => (
           <CategorySection
-            key={cat.slug}
+            key={cat.id}
+            id={cat.id}
             title={cat.name}
-            slug={cat.slug}
-            products={categoryProducts[cat.slug]}
+            products={categoryProducts[cat.id] || []}
             loading={loading}
             wishlist={wishlist}
             toggleWishlist={toggleWishlist}

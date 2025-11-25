@@ -1,4 +1,3 @@
-// pages/api/products.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { connectDB } from "@/lib/db";
 import Product from "@/models/Product";
@@ -6,14 +5,10 @@ import Product from "@/models/Product";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") return res.status(405).json({ message: "Method not allowed" });
 
-  const { categoryId, limit, exclude, skip } = req.query;
-  const max = parseInt(limit as string) || 4;
-  const skipNum = parseInt(skip as string) || 0;
+  const { categoryId, limit, exclude } = req.query;
+  const max = parseInt(limit as string) || 8;
 
-  if (!categoryId) {
-    const all = await Product.find({ active: true }).lean();
-    return res.status(200).json(all);
-  }
+  if (!categoryId) return res.status(400).json({ message: "Category ID is required" });
 
   try {
     await connectDB();
@@ -22,7 +17,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       category: categoryId,
       _id: { $ne: exclude },
     })
-      .skip(skipNum)
       .limit(max)
       .select("title images price category")
       .lean();
@@ -30,6 +24,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(200).json({ products });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error fetching products" });
+    res.status(500).json({ message: "Server error fetching similar products" });
   }
 }

@@ -4,21 +4,22 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import ProductCard from "@/components/home/ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { IProduct } from "@/models/Product";
 import { toast } from "sonner";
 
 export default function CategoryPage() {
   const router = useRouter();
-  const { slug } = router.query;
+  const { id } = router.query;
 
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<IProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!slug) return;
+    if (!id) return;
 
     const fetchProducts = async () => {
       try {
-        const res = await fetch(`/api/products?category=${slug}`);
+        const res = await fetch(`/api/products?categoryId=${id}`);
         const data = await res.json();
         setProducts(data.products || []);
       } catch (err) {
@@ -30,12 +31,12 @@ export default function CategoryPage() {
     };
 
     fetchProducts();
-  }, [slug]);
+  }, [id]);
 
   return (
     <div className="px-6 lg:px-25 xl:px-25 py-10 max-w-8xl">
       <h1 className="text-2xl sm:text-3xl font-bold mb-6 capitalize">
-        {slug?.toString().replace(/-/g, " ")}
+        Category Products
       </h1>
 
       {loading ? (

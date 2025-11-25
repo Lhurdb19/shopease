@@ -12,7 +12,7 @@ export default function WishlistPage() {
   const { wishlist, removeFromWishlist, loading } = useWishlist();
   const { addToCart } = useCart();
 
-  if (loading) return <p>Loading wishlist...</p>;
+  if (loading) return <p className="flex justify-center mt-10">Loading wishlist...</p>;
 
   if (!wishlist?.length)
     return (

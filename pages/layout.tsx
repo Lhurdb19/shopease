@@ -13,12 +13,15 @@ import Footer from "./footer";
 import { Toaster } from "@/components/ui/sonner";
 import Script from "next/script";
 import { SettingsProvider } from "@/contexts/SettingsContext";
+import UserDashboard from "./user/profile";
+import ChatWidget from "@/components/ChatWidget";
 
 interface LayoutProps {
   children: ReactNode;
+  hideNavFooter?: boolean;
 }
 
-export default function Layout({ children }: LayoutProps) {
+export default function Layout({ children, hideNavFooter }: LayoutProps) {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [localVerified, setLocalVerified] = useState(false);
@@ -81,13 +84,15 @@ export default function Layout({ children }: LayoutProps) {
           </SidebarProvider>
         ) : (
           <div className="min-h-screen flex flex-col">
-            <Navbar />
+            {!hideNavFooter && <Navbar />}
             <main className="flex-1">{children}</main>
-            <Toaster position="top-center" />
+            {/* {hideNavFooter && <UserDashboard/>} */}
+            {/* <Toaster position="top-center" /> */}
             <Script src="https://js.paystack.co/v1/inline.js" strategy="beforeInteractive" />
             <Script src="https://checkout.flutterwave.com/v3.js" strategy="beforeInteractive" />
             <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="beforeInteractive" />
-            <Footer />
+            <ChatWidget/>
+            {!hideNavFooter && <Footer />}
           </div>
         )}
       </SettingsProvider>

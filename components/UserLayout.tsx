@@ -1,16 +1,20 @@
-"use client";
-import { ReactNode } from "react";
-import UserSidebar from "@/pages/user/usersidebar";
+// // components/Layout.tsx
+// import Navbar from "./navbar";
+// import Footer from "@/pages/footer";
 
-interface UserLayoutProps {
-  children: ReactNode;
-}
+// interface LayoutProps {
+//   children: React.ReactNode;
+//   hideNavFooter?: boolean;
+// }
 
-export default function UserLayout({ children }: UserLayoutProps) {
-  return (
-    <div className="flex min-h-screen bg-gray-50">
-      <UserSidebar />
-      <main className="flex-1 p-6">{children}</main>
-    </div>
-  );
-}
+// const Layout: React.FC<LayoutProps> = ({ children, hideNavFooter }) => {
+//   return (
+//     <>
+//       {!hideNavFooter && <Navbar />}
+//       <main>{children}</main>
+//       {!hideNavFooter && <Footer />}
+//     </>
+//   );
+// };
+
+// export default Layout;
