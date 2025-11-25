@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import CategorySection from "@/components/home/CategoriesSection";
-import ProductOverlay from "@/components/home/ProductOverlay";
 import { IProduct } from "@/models/Product";
 import { Toaster } from "sonner";
 
