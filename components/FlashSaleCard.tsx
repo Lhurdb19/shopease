@@ -10,7 +10,7 @@ export interface FlashSaleItem {
   price: number;
   oldPrice: number;
   discount: number;
-  endsAt: string; // ISO
+  endsAt: string;
 }
 
 export default function FlashSaleCard({ item, compact = false } : { item: FlashSaleItem, compact?: boolean }) {

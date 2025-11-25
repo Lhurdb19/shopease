@@ -76,7 +76,7 @@ export default function ProductCard({ product, loading, onOpen }: ProductCardPro
   return (
     <article
       onClick={handleClick}
-      className="shadow-[#272d28] rounded-2xl shadow-sm border overflow-hidden cursor-pointer hover:shadow-lg transition"
+      className="shadow-[#e0e0e0] rounded-2xl border overflow-hidden cursor-pointer hover:shadow-lg transition"
     >
       <div className="relative w-full h-35 md:h-[260px]">
         <Image
@@ -111,7 +111,7 @@ export default function ProductCard({ product, loading, onOpen }: ProductCardPro
           <button
             onClick={handleAddToCart}
             className={`text-white text-[9px] md:text-sm px-1.5 py-1 rounded-md ${
-              isInCart(product!._id) ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-blue-700"
+              isInCart(product!._id) ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"
             }`}
             disabled={isInCart(product!._id)}
           >

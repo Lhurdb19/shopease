@@ -151,3 +151,26 @@ li {
 @import "swiper/css";
 @import "swiper/css/pagination";
 @import "swiper/css/navigation";
+
+@font-face {
+  font-family: Montserrat;
+  src: url(/assets/Montserrat-Light.ttf);
+}
+
+@font-face {
+  font-family: Strike;
+  src: url(/assets/ProtestStrike-Regular.ttf);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Strike;
+  font-weight: 400;
+}
+
+a, button {
+  font-weight: bold;
+}
+
+span, p, button, a {
+  font-family: Montserrat;
+}

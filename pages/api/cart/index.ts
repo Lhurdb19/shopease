@@ -59,7 +59,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(200).json(populatedCart);
     }
 
-    // ✅ DELETE - remove item from cart
+    // DELETE /api/cart?productId=xxx  -> remove single item
+    if (req.method === "DELETE" && req.query.productId) {
+      const { productId } = req.query;
+
+      const cart = await Cart.findOne({ user: user._id });
+      if (!cart) return res.status(404).json({ message: "Cart not found" });
+
+      cart.items = cart.items.filter(
+        (item: any) => item.product.toString() !== productId
+      );
+
+      await cart.save();
+      const updatedCart = await cart.populate("items.product");
+      return res.status(200).json(updatedCart);
+    }
+
     // DELETE /api/cart - clear entire cart
     if (req.method === "DELETE" && req.query.clear === "all") {
       const cart = await Cart.findOne({ user: user._id });

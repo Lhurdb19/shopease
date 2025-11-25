@@ -313,11 +313,15 @@ export default function UploadProduct() {
             </div>
           </>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4 w-full text-black">
+          <form onSubmit={handleSubmit} className="space-y-2 w-full text-black overflow-y-auto">
             <Input name="title" value={form.title} onChange={handleChange} required />
             <Textarea name="description" value={form.description} onChange={handleChange} />
+            <div className="flex gap-6">
             <Input type="number" name="price" value={form.price} onChange={handleChange} required />
             <Input type="number" name="stock" value={form.stock} onChange={handleChange} />
+            </div>
+             <div className="flex gap-6">
+
             <input
               list="categories"
               name="category"
@@ -325,15 +329,16 @@ export default function UploadProduct() {
               onChange={handleChange}
               className="w-full p-2 border rounded"
               required
-            />
+              />
             <datalist id="categories">
               {categories.map((cat) => <option key={cat} value={cat} />)}
             </datalist>
             <Input type="file" multiple accept="image/*" onChange={handleNewImagesChange} />
+              </div>
 
             {/* Existing & new image previews */}
             {existingImages.length + newImages.length > 0 && (
-              <div className="grid grid-cols-3 gap-2 mt-2">
+              <div className="grid grid-cols-5 gap-2 mt-2">
                 {existingImages.map((img, idx) => (
                   <div key={`exist-${idx}`} className="relative">
                     <img src={img} className="w-full h-24 object-cover rounded border" />

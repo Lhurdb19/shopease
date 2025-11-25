@@ -18,8 +18,8 @@ export default function CategorySection({ id, title, products = [], loading }: P
   return (
     <section className="mb-10">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl sm:text-2xl font-bold">{title}</h2>
-        <Link href={`/category/${id}`} className="text-blue-600 hover:underline">
+        <h2 className="text-xl sm:text-2xl font-bold capitalize">{title}</h2>
+        <Link href={`/category/${id}`} className="text-green-600 hover:underline">
           View All →
         </Link>
       </div>

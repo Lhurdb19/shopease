@@ -181,36 +181,78 @@ export default function PaymentPage() {
     return <div className="text-center p-10">Loading...</div>;
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white border rounded-xl shadow">
-      <Toaster richColors />
+  <div className="min-h-screen bg-gray-50 py-10 px-4">
+    <Toaster richColors />
+    <div className="max-w-lg mx-auto">
+      <div className="bg-white shadow-lg rounded-2xl p-6">
+        
+        <h1 className="text-2xl font-bold text-gray-900 text-center mb-6">
+          Payment Overview
+        </h1>
 
-      <h1 className="text-xl font-bold text-center mb-4">Choose Payment Method</h1>
+        {/* Order Summary */}
+        <div className="mb-6 border p-4 rounded-xl bg-gray-50">
+          <h2 className="font-semibold text-gray-800 text-lg mb-3">
+            Order Summary
+          </h2>
 
-      <div className="space-y-3">
-        {paymentMethods.map((m) => (
-          <label
-            key={m.id}
-            className={`p-3 text-black border rounded-xl flex items-center cursor-pointer ${selected === m.id ? "border-blue-600" : ""
-              }`}
-          >
-            <input
-              type="radio"
-              onChange={() => setSelected(m.id)}
-              checked={selected === m.id}
-              className="mr-3"
-            />
-            {m.label}
-          </label>
-        ))}
+          <div className="space-y-2 text-sm">
+            <p className="flex justify-between">
+              <span className="text-gray-600">Items:</span>
+              <span className="font-semibold text-gray-900">
+                {items.length}
+              </span>
+            </p>
+
+            <p className="flex justify-between">
+              <span className="text-gray-600">Shipping:</span>
+              <span className="font-semibold text-gray-900">
+                {shipping.address}
+              </span>
+            </p>
+
+            <p className="flex justify-between border-t pt-3 text-base font-bold">
+              <span>Total Amount:</span>
+              <span>₦{total.toLocaleString()}</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Payment Method */}
+        <div>
+          <h2 className="font-semibold text-gray-800 text-lg mb-3">
+            Choose Payment Method
+          </h2>
+
+          <div className="space-y-3">
+            {paymentMethods.map((m) => (
+              <label
+                key={m.id}
+                className={`p-4 border rounded-xl bg-gray-50 cursor-pointer flex items-center transition-all
+                  ${selected === m.id ? "border-blue-600 shadow-sm" : "border-gray-300"}
+                `}
+              >
+                <input
+                  type="radio"
+                  onChange={() => setSelected(m.id)}
+                  checked={selected === m.id}
+                  className="mr-3 h-4 w-4"
+                />
+                <span className="text-gray-700 font-medium">{m.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <button
+          onClick={handlePayment}
+          disabled={isProcessing}
+          className="mt-8 w-full py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold shadow transition-all disabled:opacity-50"
+        >
+          {isProcessing ? "Processing..." : "Continue to Pay"}
+        </button>
       </div>
-
-      <button
-        onClick={handlePayment}
-        disabled={isProcessing}
-        className="mt-6 w-full py-3 rounded-xl bg-blue-600 text-white"
-      >
-        {isProcessing ? "Processing..." : "Continue"}
-      </button>
     </div>
-  );
+  </div>
+);
 }

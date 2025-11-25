@@ -3,7 +3,8 @@ import { connectDB } from "@/lib/db";
 import Product from "@/models/Product";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "GET") return res.status(405).json({ message: "Method not allowed" });
+  if (req.method !== "GET")
+    return res.status(405).json({ message: "Method not allowed" });
 
   const query = String(req.query.q || "").trim();
   if (!query) return res.status(200).json([]);
@@ -13,9 +14,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const products = await Product.find({
       active: true,
-      title: { $regex: query, $options: "i" }, // case-insensitive search
+      title: { $regex: query, $options: "i" },
     })
-      .select("title slug thumbnail price")
+      .select("title _id images price")
       .limit(8)
       .lean();
 

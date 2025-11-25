@@ -46,7 +46,7 @@ export default function ProductsPage({ products: initialProducts }: Props) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search products..."
-              className="border rounded-full px-4 py-2 w-full max-w-xs focus:outline-none border-black text-black focus:ring-2 focus:ring-blue-500"
+              className="border rounded-full px-4 py-2 w-full max-w-xs focus:outline-none border-black text-black focus:ring-2 focus:ring-green-500"
             />
           </div>
         </div>
@@ -54,7 +54,7 @@ export default function ProductsPage({ products: initialProducts }: Props) {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {products.map((p) => (
             <Link key={p._id} href={`/products/${p._id}`}>
-                <ProductCard product={p} />
+              <ProductCard product={p} />
             </Link>
           ))}
         </div>
@@ -75,7 +75,12 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     const q = ctx.query.search ? String(ctx.query.search).trim() : "";
     let products;
     if (!q) {
-      products = await ProductModel.find({ active: true }).sort({ createdAt: -1 }).lean();
+      // products = await ProductModel.find({ active: true }).sort({ createdAt: -1 }).lean();
+      products = await ProductModel.find({ active: true })
+        .select("title price images category _id")
+        .sort({ createdAt: -1 })
+        .lean();
+
     } else {
       products = await ProductModel.find({
         active: true,
